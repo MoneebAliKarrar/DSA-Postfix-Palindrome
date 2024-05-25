@@ -16,13 +16,26 @@ def infix_to_postfix(expression):
                 i += 1 
             tokens.append(''.join(num))
             continue
-        elif expression[i] in '+-*/()':
-            
+        elif expression[i] in '+*/()':
             tokens.append(expression[i])
+        elif expression[i] == '-':
+            if i == 0 or expression[i-1] in '+-*/(':
+                num = ['-']
+                i += 1
+                while i < len(expression) and (expression[i].isdigit() or expression[i] == '.'):
+                    num.append(expression[i])
+                    i += 1
+                tokens.append(''.join(num))
+                continue
+            else:
+                tokens.append('-')
         i += 1
 
     for token in tokens:
         if token.replace('.', '', 1).isdigit():
+            output.append(token)
+        if token.startswith('-'):
+            token.replace('-','',-1).isdigit()
             output.append(token)
         elif token == '(':
             operator_stack.push(token)
@@ -31,7 +44,7 @@ def infix_to_postfix(expression):
             while top_token != '(':
                 output.append(top_token)
                 top_token = operator_stack.pop()
-        else:  # The token is an operator
+        elif token in '+*/()':  # The token is an operator
             while (not operator_stack.isempty()) and (precedence[operator_stack.top()] >= precedence[token]):
                 output.append(operator_stack.pop())
             operator_stack.push(token)
@@ -46,7 +59,7 @@ def evaluate_postfix(expression):
     tokens = expression.split()
 
     for token in tokens:
-        if token.replace('.', '', 1).isdigit():
+        if token.replace('.', '', 1).isdigit() or (token.startswith('-') and token[1:].replace('.', '', 1).isdigit()):
             operand_stack.push(token)
         else:
             val1 = float(operand_stack.pop())
@@ -76,7 +89,6 @@ def PalindromeEvaluator(expression):
 
 
 if __name__ == "__main__":
-
     expression = input("Enter an infix expression: ")
     print("Infix expression:", expression)
     postfix_expression = infix_to_postfix(expression)
